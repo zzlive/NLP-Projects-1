@@ -1,7 +1,7 @@
 # NLP-Projects
 This is the NLP projects for HKU MFin course.
 
-# Initializing GitHub Repo
+# 初始设置GitHub库和本地Git库
 1. 在GitHub上建立库
     先在GitHub上创建一个库(Repo)或者fork别人的库(Repo)
     假设这个库的地址是：`user_name/repo_name`
