@@ -6,4 +6,4 @@ This is the NLP projects for HKU MFin course.
 * List
 * List
 |Name|Link|
-|Dave|<https://github.com/DaveTingCN>
+|Dave|<https://github.com/DaveTingCN>|
