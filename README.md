@@ -36,6 +36,7 @@ This is the NLP projects for HKU MFin course.
 
 # 使用GitHub
 1. Pull
+
     保持良好习惯，每次先将最新的库同步到本地
     ```
     git pull origin master
@@ -56,3 +57,32 @@ This is the NLP projects for HKU MFin course.
     ```
     git push -u origin master
     ```
+
+# 创建分支及合并
+
+1. 创建分支dev
+	
+	```
+	git checkout -b dev
+	```
+
+	或者
+	```
+	git branch dev
+	git checkout dev
+	```
+
+1. 查看分支
+
+	`git branch`
+	*代表当前所在的分支
+
+1. 提交更改
+
+	同之前一样，`git add`和`git commit -m`即可
+
+1. 合并分支
+
+	`git checkout master`回到主分支，`git merge dev`将dev分支合并进来
+
+	合并完成后可以通过`git brancd -d dev`删除dev分支
