@@ -1,0 +1,96 @@
+import pandas as pd
+import time
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+import bs4 as bs
+import requests
+pd.options.display.expand_frame_repr=False
+
+def fun_get_url_day(browser,day_link):
+    '''
+    Get all the urls of one day
+    :param browser: Webdriver we use
+    :param day_link: Str, the xpath of this day's information
+    :return: list, list of urls or empty list.
+    '''
+    mouse = browser.find_element_by_xpath(day_link)
+    ActionChains(browser).move_to_element(mouse).perform()
+    try:
+        return ([l.find_elements_by_xpath('a')[0].get_attribute('href') for l in browser.find_element_by_xpath(day_link + '/div/div[2]/ul').find_elements_by_xpath('li')])
+    except:
+        return ([])
+
+def fun_get_url_all(browser,web_url):
+    '''
+    Get all the urls
+    :param browser: Webdriver we use
+    :param web_url: Str, waybackmachine website
+    :return:list, all the urls from 2016 - 2019
+    '''
+    browser.get(web_url)
+    browser.refresh()
+    time.sleep(3)
+    year_link = r'//*[@id="wb-calendar"]/div'
+    year_list = []
+    for month in range(12):
+        month_list = []
+        month_link = year_link + '/div['+ str(month + 1) +']/div[2]'
+        for week in range(len(browser.find_element_by_xpath(month_link).find_elements_by_xpath('div'))):
+            week_list = []
+            week_link = month_link + '/div[' + str(week + 1) + ']'
+            for day in range(7):
+                day_link = week_link + '/div[' + str(day + 1) +']'
+                week_list += fun_get_url_day(browser,day_link)
+            month_list += week_list
+            print('Month '+ str(month+1) + ' Week ' + str(week) + ' Finshed')
+        year_list += month_list
+    return (year_list)
+
+def fun_get_headline(url_file):
+    dfs = []
+    num_fail = 0
+    for i,url in enumerate(url_file.iloc[:,1]):
+        h = requests.get(url)
+        soup = bs.BeautifulSoup(h.text, 'lxml')
+        headline = [h.text for h in soup('p', class_='title')]
+        if len(headline) == 0:
+            headline = [h.text for h in soup('h2')]
+            if len(headline) == 0:
+                print(url + ' Failed')
+                num_fail += 1
+                continue
+        df = pd.DataFrame({'Time':url[28:40],'Title':headline})
+        dfs.append(df)
+        if i % 5 == 0:
+            print(str(i) + ' Url Finished')
+    result = pd.concat(dfs)
+    print(str(len(url_file.iloc[:,1])-num_fail) + ' succeed but ' + str(num_fail) + ' failed.')
+    return(result)
+
+def fun_main():
+    for file in files:
+        #url_file = pd.read_csv(file).iloc[:5,]
+        url_file = pd.read_csv(file)
+        fun_get_headline(url_file).to_csv(file.replace('Url','Title'))
+        print (file)
+
+if __name__ == '__main__':
+    my_path = r"C:\Users\zzliv\Downloads\chromedriver_win32\chromedriver.exe"
+    web_url_2016 = r'https://web.archive.org/web/20161201000000*/https://www.reddit.com/r/news/'
+    web_url_2017 = r'https://web.archive.org/web/20171201000000*/https://www.reddit.com/r/news/'
+    web_url_2018 = r'https://web.archive.org/web/20181201000000*/https://www.reddit.com/r/news/'
+    web_url_2019 = r'https://web.archive.org/web/20191201000000*/https://www.reddit.com/r/news/'
+    browser = webdriver.Chrome(executable_path=my_path)  # webdriver.Chrome for chromedriver
+    browser.maximize_window()
+    # Get urls
+    news_url_list = []
+    web_list = [web_url_2016,web_url_2017,web_url_2018,web_url_2019]
+    for i in range(4):
+        news_url_list = []
+        news_url_list.append(fun_get_url_all(browser, web_list[i]))
+        pd.DataFrame(news_url_list).T.to_csv('Url_'+ str(2016+i) + '.csv')
+
+    # Get headlines
+    files = ['Url_2016.csv','Url_2017.csv','Url_2018.csv','Url_2019.csv']
+    # files = ['Url_2018.csv']
+    fun_main()
